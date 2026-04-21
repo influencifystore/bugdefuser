@@ -1,0 +1,1979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bug Defuser — Website Audit, Bug Fixing & Security Retainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --dark:       #080812;
+  --dark2:      #0F0F20;
+  --dark3:      #16162E;
+  --panel:      #1A1A30;
+  --orange:     #FF5A1F;
+  --orange2:    #FF8C42;
+  --purple:     #6C3FC5;
+  --purple2:    #8B5CF6;
+  --teal:       #00C2CC;
+  --red:        #E03030;
+  --green:      #00C97A;
+  --amber:      #F5A623;
+  --white:      #FFFFFF;
+  --gray1:      #E8EBF0;
+  --gray2:      #A0AABB;
+  --gray3:      #4A5568;
+  --border:     rgba(255,255,255,0.07);
+  --border2:    rgba(255,90,31,0.3);
+  --font-head:  'Rajdhani', sans-serif;
+  --font-mono:  'IBM Plex Mono', monospace;
+  --font-body:  'Manrope', sans-serif;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--dark);
+  color: var(--gray1);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ─── NOISE TEXTURE OVERLAY ─── */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:0; opacity:.4;
+}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background: var(--dark2); }
+::-webkit-scrollbar-thumb { background: var(--orange); border-radius:2px; }
+
+/* ─── GRID PATTERN ─── */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(255,90,31,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,90,31,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ─── SECTION BASE ─── */
+section { position:relative; z-index:1; }
+
+.container { max-width:1200px; margin:0 auto; padding:0 24px; }
+.section-pad { padding:100px 0; }
+
+/* ─── TAGS ─── */
+.tag {
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:var(--font-mono); font-size:11px; font-weight:600;
+  letter-spacing:.12em; text-transform:uppercase;
+  color:var(--orange); padding:6px 14px;
+  border:1px solid rgba(255,90,31,0.4);
+  border-radius:2px; background:rgba(255,90,31,0.06);
+  margin-bottom:20px;
+}
+.tag::before { content:'//'; opacity:.5; }
+
+/* ─── HEADINGS ─── */
+.section-title {
+  font-family:var(--font-head);
+  font-size:clamp(36px,5vw,58px);
+  font-weight:700;
+  line-height:1.05;
+  letter-spacing:-.5px;
+  color:var(--white);
+  margin-bottom:16px;
+}
+.section-title span { color:var(--orange); }
+.section-title .accent { color:var(--teal); }
+
+.section-sub {
+  font-size:17px; color:var(--gray2); max-width:600px;
+  line-height:1.7; margin-bottom:60px;
+}
+
+/* ─── BUTTONS ─── */
+.btn {
+  display:inline-flex; align-items:center; gap:10px;
+  font-family:var(--font-head); font-size:16px; font-weight:700;
+  letter-spacing:.06em; text-transform:uppercase;
+  padding:14px 32px; border-radius:3px;
+  cursor:pointer; text-decoration:none;
+  transition:all .2s ease; border:none;
+}
+.btn-primary {
+  background:var(--orange); color:var(--white);
+  box-shadow:0 0 30px rgba(255,90,31,0.35);
+}
+.btn-primary:hover {
+  background:var(--orange2);
+  box-shadow:0 0 50px rgba(255,90,31,0.55);
+  transform:translateY(-2px);
+}
+.btn-outline {
+  background:transparent; color:var(--white);
+  border:1px solid rgba(255,255,255,0.2);
+}
+.btn-outline:hover {
+  border-color:var(--orange); color:var(--orange);
+  background:rgba(255,90,31,0.06);
+}
+.btn-ghost {
+  background:transparent; color:var(--gray2);
+  border:1px solid var(--border);
+  font-size:14px; padding:10px 24px;
+}
+.btn-ghost:hover { color:var(--white); border-color:rgba(255,255,255,.2); }
+
+/* ─── CARDS ─── */
+.card {
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:32px;
+  transition:all .3s ease;
+  position:relative; overflow:hidden;
+}
+.card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg, transparent, var(--orange), transparent);
+  opacity:0; transition:opacity .3s;
+}
+.card:hover { border-color:rgba(255,90,31,0.3); transform:translateY(-4px); }
+.card:hover::before { opacity:1; }
+
+/* ─────────────────────────────────────────────────
+   NAV
+───────────────────────────────────────────────── */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:1000;
+  padding:0 24px;
+  background:rgba(8,8,18,0.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  transition:all .3s;
+}
+.nav-inner {
+  max-width:1200px; margin:0 auto;
+  display:flex; align-items:center; justify-content:space-between;
+  height:70px;
+}
+.nav-logo {
+  display:flex; align-items:center; gap:12px;
+  text-decoration:none;
+}
+.nav-logo img { height:46px; width:auto; border-radius:8px; object-fit:contain; background:#fff; padding:3px 8px; box-shadow:0 0 0 1px rgba(255,255,255,0.08); }
+.nav-links {
+  display:flex; align-items:center; gap:32px;
+  list-style:none;
+}
+.nav-links a {
+  font-family:var(--font-mono); font-size:12px; font-weight:500;
+  letter-spacing:.1em; text-transform:uppercase;
+  color:var(--gray2); text-decoration:none;
+  transition:color .2s; position:relative;
+}
+.nav-links a::after {
+  content:''; position:absolute; bottom:-4px; left:0; right:0;
+  height:1px; background:var(--orange);
+  transform:scaleX(0); transition:transform .2s;
+}
+.nav-links a:hover { color:var(--white); }
+.nav-links a:hover::after { transform:scaleX(1); }
+.nav-cta { display:flex; align-items:center; gap:12px; }
+.hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; }
+.hamburger span { display:block; width:24px; height:2px; background:var(--gray2); transition:.3s; }
+
+/* ─────────────────────────────────────────────────
+   HERO
+───────────────────────────────────────────────── */
+#hero {
+  min-height:100vh;
+  display:flex; align-items:center;
+  padding:120px 24px 80px;
+  position:relative; overflow:hidden;
+}
+
+/* Animated grid */
+#hero::after {
+  content:'';
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(108,63,197,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(108,63,197,0.06) 1px, transparent 1px);
+  background-size:50px 50px;
+  animation: gridMove 20s linear infinite;
+}
+@keyframes gridMove {
+  0%   { background-position:0 0; }
+  100% { background-position:50px 50px; }
+}
+
+.hero-glow {
+  position:absolute; top:-200px; right:-100px;
+  width:700px; height:700px; border-radius:50%;
+  background:radial-gradient(circle, rgba(255,90,31,0.12) 0%, transparent 70%);
+  pointer-events:none;
+}
+.hero-glow2 {
+  position:absolute; bottom:-300px; left:-200px;
+  width:600px; height:600px; border-radius:50%;
+  background:radial-gradient(circle, rgba(108,63,197,0.1) 0%, transparent 70%);
+  pointer-events:none;
+}
+
+.hero-inner {
+  position:relative; z-index:2;
+  max-width:1200px; margin:0 auto; width:100%;
+  display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center;
+}
+
+.hero-terminal {
+  font-family:var(--font-mono); font-size:11px;
+  color:var(--orange); letter-spacing:.12em;
+  text-transform:uppercase; opacity:.7;
+  margin-bottom:20px;
+  display:flex; align-items:center; gap:10px;
+}
+.hero-terminal::before {
+  content:''; display:block;
+  width:8px; height:8px; background:var(--orange);
+  border-radius:50%; animation:pulse 2s infinite;
+}
+@keyframes pulse {
+  0%,100%{ opacity:1; transform:scale(1); }
+  50%    { opacity:.4; transform:scale(.8); }
+}
+
+.hero-title {
+  font-family:var(--font-head);
+  font-size:clamp(44px,6vw,76px);
+  font-weight:700; line-height:1.0;
+  letter-spacing:-1px; color:var(--white);
+  margin-bottom:24px;
+}
+.hero-title .line-orange { color:var(--orange); display:block; }
+.hero-title .line-teal   { color:var(--teal);   display:block; }
+
+/* glitch effect */
+.glitch {
+  position:relative; display:inline-block;
+  animation:glitch-anim 4s infinite;
+}
+.glitch::before, .glitch::after {
+  content:attr(data-text);
+  position:absolute; top:0; left:0;
+  width:100%; height:100%;
+}
+.glitch::before {
+  color:var(--teal); clip-path:polygon(0 30%,100% 30%,100% 50%,0 50%);
+  animation:glitch-b 4s infinite;
+}
+.glitch::after {
+  color:var(--orange); clip-path:polygon(0 60%,100% 60%,100% 80%,0 80%);
+  animation:glitch-c 4s infinite;
+}
+@keyframes glitch-anim {
+  0%,89%,100%{ transform:none; }
+  90%{ transform:skew(-1deg); }
+  91%{ transform:skew(1deg); }
+}
+@keyframes glitch-b {
+  0%,89%,100%{ transform:none; opacity:0; }
+  90%{ transform:translate(-3px,0); opacity:.7; }
+  91%{ transform:translate(3px,0); opacity:.7; }
+}
+@keyframes glitch-c {
+  0%,92%,100%{ transform:none; opacity:0; }
+  93%{ transform:translate(3px,0); opacity:.7; }
+  94%{ transform:translate(-3px,0); opacity:.7; }
+}
+
+.hero-desc {
+  font-size:18px; color:var(--gray2); line-height:1.75;
+  max-width:500px; margin-bottom:36px;
+}
+
+.hero-actions { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:48px; }
+
+.hero-stats {
+  display:flex; gap:32px; flex-wrap:wrap;
+}
+.stat-item { text-align:left; }
+.stat-num {
+  font-family:var(--font-head); font-size:32px; font-weight:700;
+  color:var(--white); line-height:1;
+}
+.stat-num span { color:var(--orange); }
+.stat-label { font-family:var(--font-mono); font-size:10px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--gray2); margin-top:4px; }
+
+/* ── Terminal window right side ── */
+.hero-visual { position:relative; }
+.terminal-window {
+  background:var(--dark2); border:1px solid var(--border);
+  border-radius:10px; overflow:hidden;
+  box-shadow:0 40px 80px rgba(0,0,0,.6), 0 0 60px rgba(255,90,31,0.08);
+  animation:float 6s ease-in-out infinite;
+}
+@keyframes float {
+  0%,100%{ transform:translateY(0); }
+  50%    { transform:translateY(-12px); }
+}
+.term-bar {
+  background:var(--dark3); padding:12px 16px;
+  display:flex; align-items:center; gap:8px;
+  border-bottom:1px solid var(--border);
+}
+.term-dot {
+  width:12px; height:12px; border-radius:50%;
+}
+.term-dot.r{ background:#FF5F57; }
+.term-dot.y{ background:#FEBC2E; }
+.term-dot.g{ background:#28C840; }
+.term-title {
+  font-family:var(--font-mono); font-size:11px; color:var(--gray3);
+  margin-left:auto; margin-right:auto;
+}
+.term-body { padding:24px; font-family:var(--font-mono); font-size:13px; line-height:1.8; }
+.term-line { display:flex; gap:10px; margin-bottom:4px; }
+.term-prompt { color:var(--orange); flex-shrink:0; }
+.term-cmd { color:var(--teal); }
+.term-out  { color:var(--gray2); padding-left:20px; }
+.term-err  { color:var(--red); padding-left:20px; }
+.term-ok   { color:var(--green); padding-left:20px; }
+.term-warn { color:var(--amber); padding-left:20px; }
+.blink {
+  display:inline-block; width:8px; height:14px;
+  background:var(--orange); vertical-align:middle; margin-left:4px;
+  animation:blink 1s step-end infinite;
+}
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
+
+/* Floating badges */
+.badge-float {
+  position:absolute;
+  background:var(--panel); border:1px solid var(--border);
+  border-radius:8px; padding:12px 16px;
+  font-family:var(--font-mono); font-size:11px;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);
+  animation:float 5s ease-in-out infinite;
+}
+.badge-float.b1 { top:-20px; left:-40px; animation-delay:-2s; }
+.badge-float.b2 { bottom:20px; right:-30px; animation-delay:-4s; }
+.badge-icon { font-size:18px; margin-bottom:4px; }
+.badge-val { font-weight:600; color:var(--white); font-size:16px; }
+.badge-key { color:var(--gray2); font-size:10px; }
+
+/* ─────────────────────────────────────────────────
+   TICKER STRIP
+───────────────────────────────────────────────── */
+.ticker-strip {
+  background:var(--orange);
+  padding:12px 0; overflow:hidden;
+  border-top:1px solid rgba(255,255,255,.1);
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+.ticker-track {
+  display:flex; gap:60px;
+  animation:tickerMove 30s linear infinite;
+  width:max-content;
+}
+.ticker-item {
+  font-family:var(--font-mono); font-size:12px; font-weight:600;
+  letter-spacing:.12em; text-transform:uppercase;
+  color:var(--dark); white-space:nowrap;
+  display:flex; align-items:center; gap:12px;
+}
+.ticker-item::after { content:'✦'; opacity:.5; }
+@keyframes tickerMove { 0%{transform:translateX(0);} 100%{transform:translateX(-50%);} }
+
+/* ─────────────────────────────────────────────────
+   ABOUT SECTION
+───────────────────────────────────────────────── */
+#about {
+  background:var(--dark2);
+  padding:100px 0;
+}
+.about-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center;
+}
+.about-logo-wrap {
+  position:relative; display:flex; justify-content:center;
+}
+.about-logo-wrap img {
+  width:100%; max-width:420px;
+  filter:drop-shadow(0 0 40px rgba(255,90,31,0.25));
+  animation:float 7s ease-in-out infinite;
+}
+.about-code-chip {
+  position:absolute; bottom:-20px; right:0;
+  background:var(--panel); border:1px solid var(--border);
+  border-radius:8px; padding:16px 20px;
+  font-family:var(--font-mono); font-size:11px; line-height:1.8;
+  box-shadow:0 20px 40px rgba(0,0,0,.5);
+}
+.about-code-chip .c-kw  { color:var(--purple2); }
+.about-code-chip .c-fn  { color:var(--teal); }
+.about-code-chip .c-str { color:var(--green); }
+.about-code-chip .c-cm  { color:var(--gray3); }
+
+.about-text p { font-size:17px; color:var(--gray2); line-height:1.8; margin-bottom:20px; }
+.about-pills { display:flex; flex-wrap:wrap; gap:10px; margin-top:24px; }
+.pill {
+  font-family:var(--font-mono); font-size:11px; font-weight:600;
+  letter-spacing:.08em; padding:7px 14px; border-radius:3px;
+  background:rgba(255,90,31,0.08); color:var(--orange);
+  border:1px solid rgba(255,90,31,0.25);
+}
+
+/* ─────────────────────────────────────────────────
+   SERVICES
+───────────────────────────────────────────────── */
+#services { background:var(--dark); padding:100px 0; }
+
+.services-grid {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:24px;
+}
+.service-card {
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:8px; padding:32px;
+  transition:all .3s ease; position:relative; overflow:hidden;
+}
+.service-card::before {
+  content:''; position:absolute;
+  top:0; left:0; bottom:0; width:3px;
+  background:var(--orange);
+  transform:scaleY(0); transform-origin:bottom;
+  transition:transform .3s ease;
+}
+.service-card:hover {
+  border-color:rgba(255,90,31,0.3);
+  background:var(--dark3);
+  transform:translateY(-4px);
+}
+.service-card:hover::before { transform:scaleY(1); }
+.svc-num {
+  font-family:var(--font-mono); font-size:11px;
+  color:var(--orange); opacity:.6; margin-bottom:16px;
+}
+.svc-icon { font-size:32px; margin-bottom:16px; display:block; }
+.svc-title {
+  font-family:var(--font-head); font-size:22px; font-weight:700;
+  color:var(--white); margin-bottom:12px;
+}
+.svc-desc { font-size:14px; color:var(--gray2); line-height:1.7; }
+.svc-tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:20px; }
+.svc-tag {
+  font-family:var(--font-mono); font-size:10px;
+  color:var(--teal); background:rgba(0,194,204,0.07);
+  border:1px solid rgba(0,194,204,0.2);
+  padding:3px 10px; border-radius:2px;
+}
+
+/* ─────────────────────────────────────────────────
+   HOW IT WORKS
+───────────────────────────────────────────────── */
+#process {
+  background:var(--dark2);
+  padding:100px 0;
+}
+.process-track {
+  display:grid; grid-template-columns:repeat(4,1fr);
+  gap:0; position:relative;
+}
+.process-track::before {
+  content:''; position:absolute; top:28px; left:10%; right:10%;
+  height:1px; background:linear-gradient(90deg, var(--orange), var(--purple), var(--teal));
+  z-index:0;
+}
+.process-step {
+  text-align:center; padding:0 16px; position:relative; z-index:1;
+}
+.step-num {
+  width:56px; height:56px; border-radius:50%;
+  background:var(--dark); border:2px solid var(--orange);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-head); font-size:22px; font-weight:700; color:var(--orange);
+  margin:0 auto 24px; position:relative;
+  box-shadow:0 0 20px rgba(255,90,31,0.3);
+}
+.step-title {
+  font-family:var(--font-head); font-size:18px; font-weight:700;
+  color:var(--white); margin-bottom:10px;
+}
+.step-desc { font-size:13px; color:var(--gray2); line-height:1.6; }
+
+/* ─────────────────────────────────────────────────
+   AUDIT CATEGORIES (what we check)
+───────────────────────────────────────────────── */
+#audit-scope { background:var(--dark); padding:100px 0; }
+
+.audit-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+.audit-row {
+  background:var(--panel); border:1px solid var(--border);
+  border-radius:6px; padding:20px 24px;
+  display:flex; align-items:center; gap:20px;
+  transition:.2s;
+}
+.audit-row:hover { border-color:rgba(255,90,31,0.3); background:var(--dark3); }
+.audit-num {
+  font-family:var(--font-mono); font-size:11px; color:var(--orange);
+  min-width:30px; opacity:.7;
+}
+.audit-icon { font-size:22px; flex-shrink:0; }
+.audit-info { flex:1; }
+.audit-title {
+  font-family:var(--font-head); font-size:17px; font-weight:700;
+  color:var(--white); margin-bottom:4px;
+}
+.audit-desc { font-size:13px; color:var(--gray2); line-height:1.5; }
+.audit-badge {
+  font-family:var(--font-mono); font-size:10px; font-weight:600;
+  padding:4px 10px; border-radius:2px;
+  flex-shrink:0;
+}
+.badge-crit { background:rgba(224,48,48,0.15); color:#FF6B6B; border:1px solid rgba(224,48,48,0.3); }
+.badge-high { background:rgba(255,90,31,0.12); color:var(--orange2); border:1px solid rgba(255,90,31,0.3); }
+.badge-med  { background:rgba(245,166,35,0.12); color:var(--amber); border:1px solid rgba(245,166,35,0.3); }
+
+/* ─────────────────────────────────────────────────
+   PRICING
+───────────────────────────────────────────────── */
+#pricing { background:var(--dark2); padding:100px 0; }
+
+.pricing-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; align-items:start; }
+
+.price-card {
+  background:var(--panel); border:1px solid var(--border);
+  border-radius:10px; padding:36px; position:relative;
+  overflow:hidden; transition:all .3s;
+}
+.price-card:hover { transform:translateY(-6px); }
+.price-card.featured {
+  background:linear-gradient(160deg, var(--dark3) 0%, #1A1040 100%);
+  border-color:var(--purple2);
+  box-shadow:0 0 60px rgba(108,63,197,0.2);
+}
+.price-card.featured::before {
+  content:'MOST POPULAR';
+  position:absolute; top:16px; right:-24px;
+  background:var(--orange); color:var(--white);
+  font-family:var(--font-mono); font-size:9px; font-weight:600;
+  letter-spacing:.1em; padding:5px 40px;
+  transform:rotate(35deg);
+}
+.price-card.elite {
+  background:linear-gradient(160deg, var(--dark3) 0%, #1A0E0A 100%);
+  border-color:var(--orange);
+  box-shadow:0 0 60px rgba(255,90,31,0.15);
+}
+.price-name {
+  font-family:var(--font-mono); font-size:12px; font-weight:600;
+  letter-spacing:.15em; text-transform:uppercase;
+  color:var(--gray2); margin-bottom:16px;
+}
+.price-featured .price-name { color:var(--purple2); }
+.price-elite .price-name { color:var(--orange); }
+.price-amount {
+  font-family:var(--font-head); font-size:46px; font-weight:700;
+  color:var(--white); line-height:1;
+}
+.price-amount sup { font-size:22px; vertical-align:super; }
+.price-period {
+  font-family:var(--font-mono); font-size:12px; color:var(--gray2);
+  margin-top:4px; margin-bottom:6px;
+}
+.price-tag-line {
+  font-size:13px; color:var(--gray2); margin-bottom:28px;
+  padding-bottom:28px; border-bottom:1px solid var(--border);
+}
+.price-features { list-style:none; margin-bottom:32px; }
+.price-features li {
+  font-size:14px; color:var(--gray2); padding:8px 0;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  display:flex; align-items:flex-start; gap:10px;
+}
+.price-features li::before {
+  content:'✓'; color:var(--green); font-weight:700; flex-shrink:0; margin-top:1px;
+}
+.price-features li.na::before { content:'—'; color:var(--gray3); }
+.price-features li.na { opacity:.5; }
+.price-btn { width:100%; display:block; text-align:center; }
+
+/* ─────────────────────────────────────────────────
+   DIGITAL MARKETING SECTION
+───────────────────────────────────────────────── */
+#digital-marketing {
+  background:var(--dark);
+  padding:100px 0; position:relative; overflow:hidden;
+}
+#digital-marketing::before {
+  content:'';
+  position:absolute; top:0; right:0;
+  width:500px; height:500px;
+  background:radial-gradient(circle, rgba(108,63,197,0.12) 0%, transparent 70%);
+  pointer-events:none;
+}
+
+.dm-grid { display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center; }
+
+.dm-stats-panel {
+  background:var(--panel); border:1px solid var(--border);
+  border-radius:10px; padding:32px; overflow:hidden;
+}
+.dm-stat-row {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 0; border-bottom:1px solid var(--border);
+}
+.dm-stat-row:last-child { border-bottom:none; }
+.dm-stat-label { font-size:14px; color:var(--gray2); }
+.dm-stat-val {
+  font-family:var(--font-head); font-size:22px; font-weight:700;
+  color:var(--white);
+}
+.dm-stat-val span { color:var(--teal); }
+.dm-bar-wrap { margin-top:6px; }
+.dm-bar {
+  height:4px; border-radius:2px; background:var(--dark3); overflow:hidden;
+}
+.dm-bar-fill {
+  height:100%; border-radius:2px;
+  background:linear-gradient(90deg, var(--purple), var(--teal));
+  animation:barFill 2s ease-out forwards;
+  width:0;
+}
+@keyframes barFill { to { width:var(--w); } }
+
+.dm-channels { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:28px; }
+.dm-channel {
+  background:var(--dark3); border:1px solid var(--border);
+  border-radius:6px; padding:14px; text-align:center;
+  transition:.2s;
+}
+.dm-channel:hover { border-color:rgba(108,63,197,0.4); }
+.dm-ch-icon { font-size:22px; display:block; margin-bottom:6px; }
+.dm-ch-name { font-family:var(--font-mono); font-size:11px; color:var(--gray2); }
+
+.dm-text .section-sub { margin-bottom:32px; }
+.dm-feature {
+  display:flex; gap:16px; margin-bottom:20px; align-items:flex-start;
+}
+.dm-feature-icon {
+  width:44px; height:44px; border-radius:8px; flex-shrink:0;
+  background:rgba(108,63,197,0.1); border:1px solid rgba(108,63,197,0.2);
+  display:flex; align-items:center; justify-content:center; font-size:18px;
+}
+.dm-feature-title {
+  font-family:var(--font-head); font-size:17px; font-weight:700;
+  color:var(--white); margin-bottom:4px;
+}
+.dm-feature-desc { font-size:14px; color:var(--gray2); line-height:1.6; }
+
+/* ─────────────────────────────────────────────────
+   INDUSTRIES
+───────────────────────────────────────────────── */
+#industries { background:var(--dark2); padding:80px 0; }
+.industries-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+.industry-card {
+  background:var(--panel); border:1px solid var(--border);
+  border-radius:8px; padding:28px 24px; text-align:center;
+  transition:all .3s; cursor:default;
+}
+.industry-card:hover {
+  border-color:rgba(255,90,31,0.4);
+  background:var(--dark3);
+  transform:translateY(-4px);
+}
+.ind-icon { font-size:36px; display:block; margin-bottom:14px; }
+.ind-title {
+  font-family:var(--font-head); font-size:18px; font-weight:700;
+  color:var(--white); margin-bottom:8px;
+}
+.ind-desc { font-size:13px; color:var(--gray2); line-height:1.6; }
+
+/* ─────────────────────────────────────────────────
+   IMPACT SECTION
+───────────────────────────────────────────────── */
+#impact { background:var(--dark); padding:100px 0; }
+.impact-grid { display:grid; grid-template-columns:1fr 1fr; gap:60px; }
+
+.impact-side h3 {
+  font-family:var(--font-head); font-size:26px; font-weight:700;
+  margin-bottom:24px; padding-bottom:14px;
+  border-bottom:2px solid;
+}
+.impact-side.loss h3 { color:var(--red); border-color:rgba(224,48,48,0.3); }
+.impact-side.gain h3 { color:var(--green); border-color:rgba(0,201,122,0.3); }
+
+.impact-item {
+  display:flex; gap:14px; margin-bottom:18px; align-items:flex-start;
+}
+.impact-bullet {
+  width:24px; height:24px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:700; margin-top:1px;
+}
+.loss .impact-bullet { background:rgba(224,48,48,0.15); color:var(--red); }
+.gain .impact-bullet { background:rgba(0,201,122,0.12); color:var(--green); }
+.impact-title { font-weight:700; color:var(--white); font-size:15px; margin-bottom:4px; }
+.impact-desc { font-size:13px; color:var(--gray2); line-height:1.6; }
+
+.impact-total {
+  border-radius:8px; padding:20px 24px; margin-top:28px;
+  font-family:var(--font-head); font-size:15px;
+  text-align:center;
+}
+.impact-total.loss-total { background:rgba(224,48,48,0.1); border:1px solid rgba(224,48,48,0.3); color:var(--red); }
+.impact-total.gain-total { background:rgba(0,201,122,0.08); border:1px solid rgba(0,201,122,0.25); color:var(--green); }
+.impact-total strong { font-size:20px; display:block; margin-top:4px; }
+
+/* ─────────────────────────────────────────────────
+   TESTIMONIALS
+───────────────────────────────────────────────── */
+#testimonials { background:var(--dark2); padding:100px 0; }
+.testi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+.testi-card {
+  background:var(--panel); border:1px solid var(--border);
+  border-radius:8px; padding:28px;
+  transition:all .3s;
+}
+.testi-card:hover { border-color:rgba(255,90,31,0.25); transform:translateY(-4px); }
+.testi-stars { color:var(--amber); font-size:14px; margin-bottom:14px; letter-spacing:2px; }
+.testi-text { font-size:14px; color:var(--gray2); line-height:1.75; margin-bottom:20px; font-style:italic; }
+.testi-author { display:flex; align-items:center; gap:12px; }
+.testi-avatar {
+  width:40px; height:40px; border-radius:50%;
+  background:linear-gradient(135deg, var(--purple), var(--orange));
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-head); font-weight:700; font-size:16px; color:var(--white);
+}
+.testi-name { font-weight:700; font-size:14px; color:var(--white); }
+.testi-role { font-family:var(--font-mono); font-size:10px; color:var(--gray2); margin-top:2px; }
+
+/* ─────────────────────────────────────────────────
+   CONTACT / CTA
+───────────────────────────────────────────────── */
+#contact {
+  background:var(--dark);
+  padding:100px 0; position:relative; overflow:hidden;
+}
+#contact::before {
+  content:'';
+  position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(255,90,31,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 50%, rgba(108,63,197,0.08) 0%, transparent 60%);
+  pointer-events:none;
+}
+.contact-inner {
+  position:relative; z-index:1;
+  display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center;
+}
+.contact-form-wrap {
+  background:var(--panel); border:1px solid var(--border);
+  border-radius:10px; padding:40px;
+}
+.form-title {
+  font-family:var(--font-head); font-size:26px; font-weight:700;
+  color:var(--white); margin-bottom:24px;
+}
+.form-group { margin-bottom:18px; }
+.form-group label {
+  display:block; font-family:var(--font-mono); font-size:11px;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--gray2);
+  margin-bottom:8px;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width:100%; background:var(--dark3);
+  border:1px solid var(--border); border-radius:5px;
+  padding:12px 16px; font-family:var(--font-body); font-size:14px;
+  color:var(--white); outline:none; transition:.2s;
+  -webkit-appearance:none;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color:var(--orange);
+  box-shadow:0 0 0 3px rgba(255,90,31,0.1);
+}
+.form-group textarea { resize:vertical; min-height:100px; }
+.form-group select { cursor:pointer; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.form-submit { width:100%; padding:15px; font-size:16px; margin-top:8px; }
+
+.contact-info h2 { margin-bottom:20px; }
+.contact-info .section-sub { margin-bottom:36px; }
+.contact-detail {
+  display:flex; gap:16px; margin-bottom:20px; align-items:flex-start;
+}
+.cd-icon {
+  width:44px; height:44px; border-radius:8px; flex-shrink:0;
+  background:rgba(255,90,31,0.1); border:1px solid rgba(255,90,31,0.2);
+  display:flex; align-items:center; justify-content:center; font-size:18px;
+}
+.cd-label { font-family:var(--font-mono); font-size:11px; color:var(--gray2); margin-bottom:4px; }
+.cd-val { font-weight:600; color:var(--white); font-size:15px; }
+
+/* ─────────────────────────────────────────────────
+   FOOTER
+───────────────────────────────────────────────── */
+footer {
+  background:var(--dark2); border-top:1px solid var(--border);
+  padding:60px 0 32px;
+}
+.footer-grid {
+  display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:48px;
+  margin-bottom:48px;
+}
+.footer-brand img { height:60px; width:auto; margin-bottom:18px; border-radius:10px; object-fit:contain; background:#fff; padding:5px 12px; box-shadow:0 2px 12px rgba(0,0,0,0.25); }
+.footer-brand p { font-size:14px; color:var(--gray2); line-height:1.7; max-width:280px; }
+.footer-social { display:flex; gap:12px; margin-top:20px; }
+.social-btn {
+  width:36px; height:36px; border-radius:6px;
+  background:var(--panel); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; text-decoration:none; transition:.2s;
+}
+.social-btn:hover { border-color:var(--orange); background:rgba(255,90,31,0.1); }
+
+.footer-col h4 {
+  font-family:var(--font-mono); font-size:11px; font-weight:600;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--white);
+  margin-bottom:20px;
+}
+.footer-col ul { list-style:none; }
+.footer-col ul li { margin-bottom:10px; }
+.footer-col ul li a {
+  font-size:14px; color:var(--gray2); text-decoration:none; transition:.2s;
+}
+.footer-col ul li a:hover { color:var(--orange); }
+
+.footer-bottom {
+  border-top:1px solid var(--border); padding-top:28px;
+  display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:16px;
+}
+.footer-copy {
+  font-family:var(--font-mono); font-size:11px; color:var(--gray3);
+}
+.footer-copy span { color:var(--orange); }
+.footer-links { display:flex; gap:24px; }
+.footer-links a {
+  font-family:var(--font-mono); font-size:11px; color:var(--gray3);
+  text-decoration:none; transition:.2s;
+}
+.footer-links a:hover { color:var(--gray2); }
+
+/* ─────────────────────────────────────────────────
+   ANIMATIONS
+───────────────────────────────────────────────── */
+.fade-up {
+  opacity:0; transform:translateY(30px);
+  transition:opacity .7s ease, transform .7s ease;
+}
+.fade-up.visible { opacity:1; transform:translateY(0); }
+
+.fade-in {
+  opacity:0; transition:opacity .7s ease;
+}
+.fade-in.visible { opacity:1; }
+
+/* ─────────────────────────────────────────────────
+   MOBILE
+───────────────────────────────────────────────── */
+@media(max-width:1024px) {
+  .hero-inner { grid-template-columns:1fr; }
+  .hero-visual { display:none; }
+  .about-grid, .dm-grid, .contact-inner, .impact-grid { grid-template-columns:1fr; }
+  .services-grid { grid-template-columns:1fr 1fr; }
+  .pricing-grid { grid-template-columns:1fr; max-width:420px; margin:0 auto; }
+  .industries-grid { grid-template-columns:repeat(2,1fr); }
+  .footer-grid { grid-template-columns:1fr 1fr; }
+  .process-track { grid-template-columns:1fr 1fr; }
+  .process-track::before { display:none; }
+  .testi-grid { grid-template-columns:1fr; max-width:480px; margin:0 auto; }
+}
+@media(max-width:768px) {
+  .section-pad { padding:70px 0; }
+  .nav-links, .nav-cta { display:none; }
+  .hamburger { display:flex; }
+  .hero-title { font-size:40px; }
+  .services-grid { grid-template-columns:1fr; }
+  .audit-grid { grid-template-columns:1fr; }
+  .industries-grid { grid-template-columns:repeat(2,1fr); }
+  .footer-grid { grid-template-columns:1fr; }
+  .footer-bottom { flex-direction:column; text-align:center; }
+  .form-row { grid-template-columns:1fr; }
+  .dm-channels { grid-template-columns:repeat(4,1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV ═══ -->
+<nav id="navbar">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <img src="/mnt/user-data/uploads/image_ec293415bd.png" alt="Bug Defuser">
+    </a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#digital-marketing">Marketing</a></li>
+      <li><a href="#impact">Impact</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="#contact" class="btn btn-ghost">Get Audit</a>
+      <a href="tel:+91XXXXXXXXXX" class="btn btn-primary">📞 Call Now</a>
+    </div>
+    <div class="hamburger" onclick="toggleMenu(this)">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section id="hero" class="grid-bg">
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+  <div class="hero-inner">
+    <div class="hero-content fade-up">
+      <div class="hero-terminal">SCANNING: [CLIENT-WEBSITE].IN — LIVE AUDIT ACTIVE</div>
+      <h1 class="hero-title">
+        <span class="glitch" data-text="WE FIND">WE FIND</span>
+        <span class="line-orange">YOUR BUGS.</span>
+        <span class="line-teal">WE FIX THEM.</span>
+      </h1>
+      <p class="hero-desc">
+        India's specialist website audit &amp; bug-fixing agency for institutes, real estate agencies,
+        clinics, and service businesses. We don't just report — we <strong>resolve</strong>.
+        Backed by 6-month security retainers.
+      </p>
+      <div class="hero-actions">
+        <a href="#contact" class="btn btn-primary">🔍 Get Free Audit Snapshot</a>
+        <a href="#pricing"  class="btn btn-outline">View Packages</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-num">17<span>+</span></div>
+          <div class="stat-label">Bug Categories</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">48<span>hr</span></div>
+          <div class="stat-label">Report Delivery</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">6<span>mo</span></div>
+          <div class="stat-label">Protection Plan</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">100<span>%</span></div>
+          <div class="stat-label">Fix Guarantee</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual fade-in">
+      <div class="badge-float b1">
+        <div class="badge-icon">🔴</div>
+        <div class="badge-val">CRITICAL</div>
+        <div class="badge-key">Form submit broken</div>
+      </div>
+      <div class="terminal-window">
+        <div class="term-bar">
+          <div class="term-dot r"></div>
+          <div class="term-dot y"></div>
+          <div class="term-dot g"></div>
+          <span class="term-title">bugdefuser — audit@live:~</span>
+        </div>
+        <div class="term-body">
+          <div class="term-line"><span class="term-prompt">$</span><span class="term-cmd">bugdefuser scan --url=client-site.in --depth=full</span></div>
+          <div class="term-line"><span class="term-out">▶ Scanning 14 pages...</span></div>
+          <div class="term-line"><span class="term-out">▶ Testing 23 forms...</span></div>
+          <div class="term-line"><span class="term-err">✕ [CRITICAL] /enroll-course — no submit button</span></div>
+          <div class="term-line"><span class="term-err">✕ [CRITICAL] /feepayment — no payment gateway</span></div>
+          <div class="term-line"><span class="term-err">✕ [CRITICAL] navbar href pointing to homepage</span></div>
+          <div class="term-line"><span class="term-warn">⚠ [HIGH] stats mismatch: 350 vs 650 partners</span></div>
+          <div class="term-line"><span class="term-warn">⚠ [HIGH] mixed HTTP content detected</span></div>
+          <div class="term-line"><span class="term-warn">⚠ [MEDIUM] batch month field missing</span></div>
+          <div class="term-line"><span class="term-ok">✓ Running fix pipeline...</span></div>
+          <div class="term-line"><span class="term-ok">✓ Generating report PDF...</span></div>
+          <div class="term-line"><span class="term-prompt">$</span><span class="blink"></span></div>
+        </div>
+      </div>
+      <div class="badge-float b2">
+        <div class="badge-icon">✅</div>
+        <div class="badge-val">+₹14L/mo</div>
+        <div class="badge-key">Revenue recovered</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TICKER ═══ -->
+<div class="ticker-strip">
+  <div class="ticker-track" id="ticker">
+    <span class="ticker-item">Bug Audit</span>
+    <span class="ticker-item">Form Fixes</span>
+    <span class="ticker-item">Payment Gateway</span>
+    <span class="ticker-item">SEO Health</span>
+    <span class="ticker-item">Security Scan</span>
+    <span class="ticker-item">6-Month Retainer</span>
+    <span class="ticker-item">Digital Marketing</span>
+    <span class="ticker-item">Mobile Testing</span>
+    <span class="ticker-item">Revenue Recovery</span>
+    <span class="ticker-item">48hr Delivery</span>
+    <span class="ticker-item">Bug Audit</span>
+    <span class="ticker-item">Form Fixes</span>
+    <span class="ticker-item">Payment Gateway</span>
+    <span class="ticker-item">SEO Health</span>
+    <span class="ticker-item">Security Scan</span>
+    <span class="ticker-item">6-Month Retainer</span>
+    <span class="ticker-item">Digital Marketing</span>
+    <span class="ticker-item">Mobile Testing</span>
+    <span class="ticker-item">Revenue Recovery</span>
+    <span class="ticker-item">48hr Delivery</span>
+  </div>
+</div>
+
+<!-- ═══ ABOUT ═══ -->
+<section id="about">
+  <div class="container section-pad">
+    <div class="about-grid">
+      <div class="about-logo-wrap fade-in">
+        <div style="text-align:center; margin-bottom:20px;">
+          <img src="/mnt/user-data/uploads/image_ec293415bd.png" alt="Bug Defuser Logo"
+            style="height:72px; width:auto; object-fit:contain; background:#fff;
+                   padding:8px 18px; border-radius:12px;
+                   box-shadow:0 4px 24px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.07);">
+        </div>
+        <img src="/mnt/user-data/uploads/Bug_defuser.png" alt="Bug Defuser Agency">
+        <div class="about-code-chip">
+          <div><span class="c-kw">const</span> <span class="c-fn">bugDefuser</span> = {</div>
+          <div>&nbsp;&nbsp;mission: <span class="c-str">"Fix before it costs you"</span>,</div>
+          <div>&nbsp;&nbsp;audits: <span class="c-str">17+</span> bug categories,</div>
+          <div>&nbsp;&nbsp;protection: <span class="c-str">"6 months"</span>,</div>
+          <div>&nbsp;&nbsp;delivery: <span class="c-str">"48 hours"</span></div>
+          <div>} <span class="c-cm">// defusing since day one</span></div>
+        </div>
+      </div>
+      <div class="about-text fade-up">
+        <div class="tag">About Bug Defuser</div>
+        <h2 class="section-title">Your Website Is <span>Costing You</span> Money Right Now</h2>
+        <p>
+          Bug Defuser is India's specialist website audit and bug-fixing agency — built specifically
+          for small and medium businesses that have websites but no dedicated tech team to keep them
+          running perfectly.
+        </p>
+        <p>
+          We've audited sites for digital marketing institutes, real estate agencies, clinics, law
+          firms, and service providers. In almost every case, we find bugs that silently drain leads,
+          block revenue, and damage the brand — bugs the owner never knew existed.
+        </p>
+        <p>
+          We don't hand you a list of problems and leave. <strong style="color:var(--orange)">We find
+          them. We fix them. We watch over them for 6 months.</strong> That's the Bug Defuser promise.
+        </p>
+        <div class="about-pills">
+          <span class="pill">₹4,999 Starter Audit</span>
+          <span class="pill">48hr Delivery</span>
+          <span class="pill">6-Month Retainer</span>
+          <span class="pill">SEO Monitoring</span>
+          <span class="pill">Security Scans</span>
+          <span class="pill">No Jargon Reports</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SERVICES ═══ -->
+<section id="services">
+  <div class="container section-pad">
+    <div class="text-center fade-up" style="text-align:center">
+      <div class="tag" style="margin:0 auto 20px">What We Do</div>
+      <h2 class="section-title" style="margin:0 auto">Complete Website <span>Protection</span></h2>
+      <p class="section-sub" style="margin:16px auto 60px">Six layers of service designed to find, fix,
+      and future-proof your website — so you can focus on your business, not your bugs.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card fade-up">
+        <div class="svc-num">01 / SERVICE</div>
+        <span class="svc-icon">🔍</span>
+        <div class="svc-title">Full Website Bug Audit</div>
+        <p class="svc-desc">Manual + automated review of every page, form, button, link, payment flow,
+        image, and script. Every issue documented with exact location, severity level, and business impact. Delivered as a professional PDF report within 48 hours.</p>
+        <div class="svc-tags">
+          <span class="svc-tag">17+ Categories</span>
+          <span class="svc-tag">PDF Report</span>
+          <span class="svc-tag">48hr Delivery</span>
+        </div>
+      </div>
+      <div class="service-card fade-up">
+        <div class="svc-num">02 / SERVICE</div>
+        <span class="svc-icon">🔧</span>
+        <div class="svc-title">Fix Implementation</div>
+        <p class="svc-desc">We don't just find bugs — we fix them. All critical and high-severity issues are resolved within the agreed timeline. You receive before/after confirmation screenshots for every single fix applied to your live site.</p>
+        <div class="svc-tags">
+          <span class="svc-tag">Critical First</span>
+          <span class="svc-tag">Verified Fixes</span>
+          <span class="svc-tag">Before/After</span>
+        </div>
+      </div>
+      <div class="service-card fade-up">
+        <div class="svc-num">03 / SERVICE</div>
+        <span class="svc-icon">🛡️</span>
+        <div class="svc-title">6-Month Security Retainer</div>
+        <p class="svc-desc">After the initial fix, we monitor your website every month for new bugs, broken links, form failures, payment issues, and security vulnerabilities. Monthly health report delivered to your inbox — before problems hit your customers.</p>
+        <div class="svc-tags">
+          <span class="svc-tag">Monthly Checks</span>
+          <span class="svc-tag">Health Reports</span>
+          <span class="svc-tag">Proactive</span>
+        </div>
+      </div>
+      <div class="service-card fade-up">
+        <div class="svc-num">04 / SERVICE</div>
+        <span class="svc-icon">📈</span>
+        <div class="svc-title">SEO Health Monitoring</div>
+        <p class="svc-desc">Monthly checks on page titles, meta descriptions, heading hierarchy, broken internal links, HTTP errors, image alt texts, and Core Web Vitals — to protect and grow your Google search rankings over time and drive organic traffic.</p>
+        <div class="svc-tags">
+          <span class="svc-tag">Rankings</span>
+          <span class="svc-tag">Core Web Vitals</span>
+          <span class="svc-tag">Monthly</span>
+        </div>
+      </div>
+      <div class="service-card fade-up">
+        <div class="svc-num">05 / SERVICE</div>
+        <span class="svc-icon">🔐</span>
+        <div class="svc-title">Security Vulnerability Scan</div>
+        <p class="svc-desc">Monthly scans for mixed content warnings (HTTP assets on HTTPS pages), outdated script versions, SSL certificate health, exposed admin paths, and common vulnerability indicators that could put your website and visitor data at risk.</p>
+        <div class="svc-tags">
+          <span class="svc-tag">SSL Check</span>
+          <span class="svc-tag">HTTPS Audit</span>
+          <span class="svc-tag">Vulnerability</span>
+        </div>
+      </div>
+      <div class="service-card fade-up">
+        <div class="svc-num">06 / SERVICE</div>
+        <span class="svc-icon">⚡</span>
+        <div class="svc-title">Priority Emergency Response</div>
+        <p class="svc-desc">If anything breaks — form stops working, website goes down, payment fails — you get priority response within 4 hours during business hours. No waiting in ticket queues. A dedicated point of contact who knows your website inside out.</p>
+        <div class="svc-tags">
+          <span class="svc-tag">4hr Response</span>
+          <span class="svc-tag">Dedicated POC</span>
+          <span class="svc-tag">SLA Backed</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section id="process">
+  <div class="container section-pad">
+    <div style="text-align:center" class="fade-up">
+      <div class="tag" style="margin:0 auto 20px">Our Process</div>
+      <h2 class="section-title" style="margin:0 auto">From <span>Broken</span> to <span class="accent">Protected</span> in 6 Steps</h2>
+      <p class="section-sub" style="margin:16px auto 60px">A structured, repeatable process that takes you from a website bleeding leads to one that converts, ranks, and stays secure.</p>
+    </div>
+    <div class="process-track">
+      <div class="process-step fade-up">
+        <div class="step-num">01</div>
+        <div class="step-title">You Reach Out</div>
+        <p class="step-desc">Contact us via form, email, or WhatsApp. Share your website URL and your business type.</p>
+      </div>
+      <div class="process-step fade-up">
+        <div class="step-num">02</div>
+        <div class="step-title">Discovery Call</div>
+        <p class="step-desc">Free 20-minute call to understand your goals, concerns, and which package fits your needs.</p>
+      </div>
+      <div class="process-step fade-up">
+        <div class="step-num">03</div>
+        <div class="step-title">Audit Begins</div>
+        <p class="step-desc">Our 7-layer audit covers navigation, forms, payments, SEO, security, mobile, and content.</p>
+      </div>
+      <div class="process-step fade-up">
+        <div class="step-num">04</div>
+        <div class="step-title">Report Delivered</div>
+        <p class="step-desc">Full PDF report within 48 hours — every bug documented with location, impact, and fix code.</p>
+      </div>
+    </div>
+    <div class="process-track" style="margin-top:32px">
+      <div class="process-step fade-up">
+        <div class="step-num" style="border-color:var(--teal); color:var(--teal); box-shadow:0 0 20px rgba(0,194,204,0.25)">05</div>
+        <div class="step-title">Bugs Fixed</div>
+        <p class="step-desc">We implement all critical fixes. You approve before we close. Verified on live site.</p>
+      </div>
+      <div class="process-step fade-up">
+        <div class="step-num" style="border-color:var(--green); color:var(--green); box-shadow:0 0 20px rgba(0,201,122,0.25)">06</div>
+        <div class="step-title">6-Month Guard</div>
+        <p class="step-desc">Monthly monitoring starts. Your website stays healthy and secure for 6 full months.</p>
+      </div>
+      <div class="process-step fade-up">
+        <div class="step-num" style="border-color:var(--purple2); color:var(--purple2); box-shadow:0 0 20px rgba(139,92,246,0.25)">07</div>
+        <div class="step-title">Quarterly Review</div>
+        <p class="step-desc">30-min strategy call every quarter to review website health, rankings, and next improvements.</p>
+      </div>
+      <div class="process-step fade-up">
+        <div class="step-num" style="border-color:var(--amber); color:var(--amber); box-shadow:0 0 20px rgba(245,166,35,0.25)">✦</div>
+        <div class="step-title">Ongoing Growth</div>
+        <p class="step-desc">Renewal, upgrades, or new features — we stay your dedicated website health partner long-term.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ WHAT WE CHECK ═══ -->
+<section id="audit-scope">
+  <div class="container section-pad">
+    <div class="fade-up">
+      <div class="tag">7-Layer Audit</div>
+      <h2 class="section-title">Every <span>Corner</span> of Your Website</h2>
+      <p class="section-sub">Our structured audit methodology covers every layer that affects your website's performance, revenue, and reputation.</p>
+    </div>
+    <div class="audit-grid">
+      <div class="audit-row fade-up">
+        <span class="audit-num">L1</span>
+        <span class="audit-icon">📋</span>
+        <div class="audit-info">
+          <div class="audit-title">Functional Testing</div>
+          <div class="audit-desc">Every form, button, CTA, modal, and interactive element tested end-to-end for correct behavior.</div>
+        </div>
+        <span class="audit-badge badge-crit">Critical</span>
+      </div>
+      <div class="audit-row fade-up">
+        <span class="audit-num">L2</span>
+        <span class="audit-icon">🔗</span>
+        <div class="audit-info">
+          <div class="audit-title">Navigation & Link Audit</div>
+          <div class="audit-desc">All internal links, nav items, footers, breadcrumbs verified — broken links and homepage fallbacks flagged.</div>
+        </div>
+        <span class="audit-badge badge-crit">Critical</span>
+      </div>
+      <div class="audit-row fade-up">
+        <span class="audit-num">L3</span>
+        <span class="audit-icon">📝</span>
+        <div class="audit-info">
+          <div class="audit-title">Content & Consistency Review</div>
+          <div class="audit-desc">Stats, pricing, contact details cross-checked for contradictions. Outdated and placeholder content documented.</div>
+        </div>
+        <span class="audit-badge badge-high">High</span>
+      </div>
+      <div class="audit-row fade-up">
+        <span class="audit-num">L4</span>
+        <span class="audit-icon">🔍</span>
+        <div class="audit-info">
+          <div class="audit-title">SEO & Metadata Inspection</div>
+          <div class="audit-desc">Page titles, meta descriptions, H1-H6 hierarchy, alt texts, canonical tags, sitemap — reviewed against current best practices.</div>
+        </div>
+        <span class="audit-badge badge-high">High</span>
+      </div>
+      <div class="audit-row fade-up">
+        <span class="audit-num">L5</span>
+        <span class="audit-icon">🔐</span>
+        <div class="audit-info">
+          <div class="audit-title">Security & HTTPS Audit</div>
+          <div class="audit-desc">Mixed content, SSL validity, exposed paths, outdated scripts, and common security header checks.</div>
+        </div>
+        <span class="audit-badge badge-high">High</span>
+      </div>
+      <div class="audit-row fade-up">
+        <span class="audit-num">L6</span>
+        <span class="audit-icon">📱</span>
+        <div class="audit-info">
+          <div class="audit-title">Mobile & Performance Check</div>
+          <div class="audit-desc">Mobile viewport testing, touch target sizes, Lighthouse audit for Performance, Accessibility, and Best Practices.</div>
+        </div>
+        <span class="audit-badge badge-med">Medium</span>
+      </div>
+      <div class="audit-row fade-up">
+        <span class="audit-num">L7</span>
+        <span class="audit-icon">💳</span>
+        <div class="audit-info">
+          <div class="audit-title">Payment & Conversion Flow</div>
+          <div class="audit-desc">All checkout, payment, enrollment, and contact flows traced end-to-end to verify a real user can complete every intended action.</div>
+        </div>
+        <span class="audit-badge badge-crit">Critical</span>
+      </div>
+      <div class="audit-row fade-up">
+        <span class="audit-num">++</span>
+        <span class="audit-icon">📊</span>
+        <div class="audit-info">
+          <div class="audit-title">Analytics & Tracking Verification</div>
+          <div class="audit-desc">Google Analytics, Meta Pixel, conversion events, and GTM tags verified for correct implementation and data accuracy.</div>
+        </div>
+        <span class="audit-badge badge-med">Medium</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PRICING ═══ -->
+<section id="pricing">
+  <div class="container section-pad">
+    <div style="text-align:center" class="fade-up">
+      <div class="tag" style="margin:0 auto 20px">Transparent Pricing</div>
+      <h2 class="section-title" style="margin:0 auto">Plans That <span>Pay for Themselves</span></h2>
+      <p class="section-sub" style="margin:16px auto 60px">Every package includes the initial full audit report. The average client recovers the cost of their audit within the first week of fixes going live.</p>
+    </div>
+    <div class="pricing-grid">
+      <!-- STARTER -->
+      <div class="price-card fade-up">
+        <div class="price-name">Starter</div>
+        <div class="price-amount"><sup>₹</sup>4,999</div>
+        <div class="price-period">One-Time Payment</div>
+        <div class="price-tag-line">Perfect for small businesses getting their first audit.</div>
+        <ul class="price-features">
+          <li>Full bug audit up to 10 pages</li>
+          <li>Written PDF report — all issues documented</li>
+          <li>Fix guidance &amp; recommendations</li>
+          <li>1 round of critical bug fixes</li>
+          <li>Email support for 30 days</li>
+          <li class="na">Monthly monitoring</li>
+          <li class="na">SEO health tracking</li>
+          <li class="na">Emergency response SLA</li>
+        </ul>
+        <a href="#contact" class="btn btn-outline price-btn">Get Started</a>
+      </div>
+      <!-- PROFESSIONAL -->
+      <div class="price-card featured fade-up">
+        <div class="price-name">Professional</div>
+        <div class="price-amount"><sup>₹</sup>9,999</div>
+        <div class="price-period">Audit + 3-Month Retainer</div>
+        <div class="price-tag-line">Best for institutes, agencies &amp; growing businesses.</div>
+        <ul class="price-features">
+          <li>Full audit up to 25 pages</li>
+          <li>Detailed PDF report with fix code</li>
+          <li>All critical + high severity fixes</li>
+          <li>3 monthly health check reports</li>
+          <li>SEO monitoring included</li>
+          <li>Priority email support</li>
+          <li>Fix verification reports</li>
+          <li class="na">Emergency response SLA</li>
+        </ul>
+        <a href="#contact" class="btn btn-primary price-btn">Get Started</a>
+      </div>
+      <!-- GUARDIAN -->
+      <div class="price-card elite fade-up">
+        <div class="price-name" style="color:var(--orange)">Guardian</div>
+        <div class="price-amount"><sup>₹</sup>17,999</div>
+        <div class="price-period">Audit + 6-Month Retainer</div>
+        <div class="price-tag-line">Maximum protection for businesses that can't afford downtime.</div>
+        <ul class="price-features">
+          <li>Unlimited pages — full site audit</li>
+          <li>Complete fix implementation</li>
+          <li>6 monthly monitoring reports</li>
+          <li>Security vulnerability scanning</li>
+          <li>SEO + performance monitoring</li>
+          <li>4-hour emergency response SLA</li>
+          <li>Quarterly strategy call</li>
+          <li>Priority dedicated POC</li>
+        </ul>
+        <a href="#contact" class="btn btn-primary price-btn" style="background:var(--orange)">Get Guardian</a>
+      </div>
+    </div>
+    <p style="text-align:center; margin-top:32px; font-family:var(--font-mono); font-size:12px; color:var(--gray2)">
+      Custom enterprise pricing for large e-commerce platforms, hospital chains &amp; multi-location businesses.
+      <a href="#contact" style="color:var(--orange); text-decoration:none">Contact us →</a>
+    </p>
+  </div>
+</section>
+
+<!-- ═══ DIGITAL MARKETING ═══ -->
+<section id="digital-marketing">
+  <div class="container section-pad">
+    <div class="dm-grid">
+      <div class="dm-text fade-up">
+        <div class="tag">Digital Marketing</div>
+        <h2 class="section-title">We Don't Just Fix Bugs — We <span>Bring You Clients</span></h2>
+        <p class="section-sub">A fast, clean website means nothing if no one visits it. That's why Bug Defuser combines technical website health with targeted digital marketing — to make your fixed website actually generate leads and revenue.</p>
+
+        <div class="dm-feature">
+          <div class="dm-feature-icon">🎯</div>
+          <div>
+            <div class="dm-feature-title">Lead Generation Campaigns</div>
+            <div class="dm-feature-desc">Google Ads and Meta Ads campaigns built around your fixed, high-converting website. We ensure your ad budget lands on pages that actually work — so every click has a real chance of converting.</div>
+          </div>
+        </div>
+        <div class="dm-feature">
+          <div class="dm-feature-icon">📊</div>
+          <div>
+            <div class="dm-feature-title">SEO & Organic Growth</div>
+            <div class="dm-feature-desc">After fixing your site's technical SEO issues, we build long-term organic visibility for high-value keywords in your industry. Education institutes, real estate portals, clinics — we know your search landscape.</div>
+          </div>
+        </div>
+        <div class="dm-feature">
+          <div class="dm-feature-icon">📱</div>
+          <div>
+            <div class="dm-feature-title">Social Media Marketing</div>
+            <div class="dm-feature-desc">Consistent brand presence across Instagram, LinkedIn, and Facebook with content that builds authority and drives qualified traffic to your newly optimized website.</div>
+          </div>
+        </div>
+        <div class="dm-feature">
+          <div class="dm-feature-icon">📧</div>
+          <div>
+            <div class="dm-feature-title">Email & WhatsApp Campaigns</div>
+            <div class="dm-feature-desc">Re-engage warm leads and existing customers with targeted email sequences and WhatsApp campaigns that convert. Built on top of the contact data your fixed website now actually captures.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fade-in">
+        <div class="dm-stats-panel">
+          <div style="font-family:var(--font-mono); font-size:11px; color:var(--gray2); letter-spacing:.1em; text-transform:uppercase; margin-bottom:20px;">
+            📊 Avg. Client Results After Bug Fix + Marketing
+          </div>
+          <div class="dm-stat-row">
+            <div>
+              <div class="dm-stat-label">Conversion Rate Improvement</div>
+              <div class="dm-bar-wrap"><div class="dm-bar"><div class="dm-bar-fill" style="--w:78%"></div></div></div>
+            </div>
+            <div class="dm-stat-val">+<span>78%</span></div>
+          </div>
+          <div class="dm-stat-row">
+            <div>
+              <div class="dm-stat-label">Organic Traffic Growth (6mo)</div>
+              <div class="dm-bar-wrap"><div class="dm-bar"><div class="dm-bar-fill" style="--w:62%"></div></div></div>
+            </div>
+            <div class="dm-stat-val">+<span>62%</span></div>
+          </div>
+          <div class="dm-stat-row">
+            <div>
+              <div class="dm-stat-label">Bounce Rate Reduction</div>
+              <div class="dm-bar-wrap"><div class="dm-bar"><div class="dm-bar-fill" style="--w:45%"></div></div></div>
+            </div>
+            <div class="dm-stat-val">-<span>45%</span></div>
+          </div>
+          <div class="dm-stat-row">
+            <div>
+              <div class="dm-stat-label">Ad ROI After Fix</div>
+              <div class="dm-bar-wrap"><div class="dm-bar"><div class="dm-bar-fill" style="--w:90%"></div></div></div>
+            </div>
+            <div class="dm-stat-val">+<span>3.2x</span></div>
+          </div>
+          <div class="dm-stat-row">
+            <div>
+              <div class="dm-stat-label">Monthly Revenue Recovery</div>
+              <div class="dm-bar-wrap"><div class="dm-bar"><div class="dm-bar-fill" style="--w:85%"></div></div></div>
+            </div>
+            <div class="dm-stat-val">₹<span>14L+</span></div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px">
+          <div style="font-family:var(--font-mono); font-size:11px; color:var(--gray2); letter-spacing:.1em; text-transform:uppercase; margin-bottom:14px;">Marketing Channels We Manage</div>
+          <div class="dm-channels">
+            <div class="dm-channel"><span class="dm-ch-icon">🔍</span><div class="dm-ch-name">Google Ads</div></div>
+            <div class="dm-channel"><span class="dm-ch-icon">📘</span><div class="dm-ch-name">Facebook</div></div>
+            <div class="dm-channel"><span class="dm-ch-icon">📸</span><div class="dm-ch-name">Instagram</div></div>
+            <div class="dm-channel"><span class="dm-ch-icon">💼</span><div class="dm-ch-name">LinkedIn</div></div>
+            <div class="dm-channel"><span class="dm-ch-icon">📧</span><div class="dm-ch-name">Email</div></div>
+            <div class="dm-channel"><span class="dm-ch-icon">💬</span><div class="dm-ch-name">WhatsApp</div></div>
+            <div class="dm-channel"><span class="dm-ch-icon">🌐</span><div class="dm-ch-name">SEO</div></div>
+            <div class="dm-channel"><span class="dm-ch-icon">🎬</span><div class="dm-ch-name">YouTube</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ INDUSTRIES ═══ -->
+<section id="industries">
+  <div class="container section-pad">
+    <div style="text-align:center" class="fade-up">
+      <div class="tag" style="margin:0 auto 20px">Industries We Serve</div>
+      <h2 class="section-title" style="margin:0 auto">Built for <span>Your Business Type</span></h2>
+      <p class="section-sub" style="margin:16px auto 60px">We understand the specific conversion flows, regulations, and audience expectations of each industry — not generic fixes, but targeted solutions.</p>
+    </div>
+    <div class="industries-grid">
+      <div class="industry-card fade-up">
+        <span class="ind-icon">🎓</span>
+        <div class="ind-title">Education & Institutes</div>
+        <p class="ind-desc">Enrollment forms, fee payment, course listings, batch schedules, placement portals — we know exactly what to check and fix for ed-tech and coaching institutes.</p>
+      </div>
+      <div class="industry-card fade-up">
+        <span class="ind-icon">🏠</span>
+        <div class="ind-title">Real Estate Agencies</div>
+        <p class="ind-desc">Property listings, inquiry forms, callback flows, map integrations, and photo galleries — high-ticket businesses where every broken element costs a property deal.</p>
+      </div>
+      <div class="industry-card fade-up">
+        <span class="ind-icon">🏥</span>
+        <div class="ind-title">Clinics & Hospitals</div>
+        <p class="ind-desc">Appointment booking, doctor listings, service pages, and patient inquiry forms — trust is everything in healthcare, and a broken website destroys it instantly.</p>
+      </div>
+      <div class="industry-card fade-up">
+        <span class="ind-icon">⚖️</span>
+        <div class="ind-title">Law Firms & CA Firms</div>
+        <p class="ind-desc">Professional service portals where credibility is everything. Broken contact forms, missing content, or security warnings undermine the firm's authority immediately.</p>
+      </div>
+      <div class="industry-card fade-up">
+        <span class="ind-icon">🛒</span>
+        <div class="ind-title">E-Commerce Stores</div>
+        <p class="ind-desc">Cart abandonment, broken checkout flows, failed payment gateways, and slow product pages — every second of friction costs real rupees in lost orders.</p>
+      </div>
+      <div class="industry-card fade-up">
+        <span class="ind-icon">🍽️</span>
+        <div class="ind-title">Restaurants & F&B</div>
+        <p class="ind-desc">Online ordering, table reservations, menu pages, delivery integrations, and loyalty programs — keeping the digital side as smooth as the dining experience.</p>
+      </div>
+      <div class="industry-card fade-up">
+        <span class="ind-icon">🔧</span>
+        <div class="ind-title">Service Providers</div>
+        <p class="ind-desc">Plumbers, electricians, salons, interior designers — businesses where the website is the first impression and a broken contact form means zero calls tomorrow.</p>
+      </div>
+      <div class="industry-card fade-up">
+        <span class="ind-icon">🏗️</span>
+        <div class="ind-title">Builders & Developers</div>
+        <p class="ind-desc">Project portfolios, site inquiry forms, EMI calculators, RERA compliance pages — high-value businesses where a single technical failure can derail a crore-rupee deal.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ IMPACT ═══ -->
+<section id="impact">
+  <div class="container section-pad">
+    <div style="text-align:center" class="fade-up">
+      <div class="tag" style="margin:0 auto 20px">Business Impact</div>
+      <h2 class="section-title" style="margin:0 auto">The <span>Real Cost</span> of Doing Nothing</h2>
+      <p class="section-sub" style="margin:16px auto 60px">Based on our actual audit findings, here's what unfixed bugs cost — and what fixing them restores — for a typical small-to-medium business in India.</p>
+    </div>
+    <div class="impact-grid">
+      <div class="impact-side loss fade-up">
+        <h3>❌ Without Bug Defuser</h3>
+        <div class="impact-item">
+          <div class="impact-bullet">✕</div>
+          <div>
+            <div class="impact-title">Broken Enrollment → ₹15–22L/mo Lost</div>
+            <div class="impact-desc">50 form visitors/day × 5% conversion × ₹25,000 avg fee = ₹62,500/day in missed revenue from a single broken submit button.</div>
+          </div>
+        </div>
+        <div class="impact-item">
+          <div class="impact-bullet">✕</div>
+          <div>
+            <div class="impact-title">Wasted Ad Spend → ₹2.4–4.5L/mo</div>
+            <div class="impact-desc">Every Google Ad click landing on a broken form converts at 0%. At ₹100/click × 100 daily visitors = ₹10,000/day burned.</div>
+          </div>
+        </div>
+        <div class="impact-item">
+          <div class="impact-bullet">✕</div>
+          <div>
+            <div class="impact-title">Delayed Fee Collections → ₹1.6L/mo</div>
+            <div class="impact-desc">No payment gateway = students delay or skip paying. 20 students × ₹8,000 average = ₹1.6L stuck monthly.</div>
+          </div>
+        </div>
+        <div class="impact-item">
+          <div class="impact-bullet">✕</div>
+          <div>
+            <div class="impact-title">SEO Ranking Decline</div>
+            <div class="impact-desc">Broken nav + high bounce rate = Google demotes your site within 8 weeks. Losing 2 positions for your key keyword = 25–35% traffic loss.</div>
+          </div>
+        </div>
+        <div class="impact-item">
+          <div class="impact-bullet">✕</div>
+          <div>
+            <div class="impact-title">Permanent Reputation Damage</div>
+            <div class="impact-desc">One "site doesn't work" post on Quora, Google Reviews, or Reddit deters 5–10 future prospects per share. Permanently.</div>
+          </div>
+        </div>
+        <div class="impact-total loss-total">
+          Estimated Monthly Cost of Inaction
+          <strong>₹20–30 Lakh / Month</strong>
+        </div>
+      </div>
+
+      <div class="impact-side gain fade-up">
+        <h3>✅ After Bug Defuser</h3>
+        <div class="impact-item">
+          <div class="impact-bullet">✓</div>
+          <div>
+            <div class="impact-title">Restored Enrollments → ₹7–11L/mo</div>
+            <div class="impact-desc">Working form + CRM integration captures every interested visitor 24/7. Restoring 50% of lost conversions = ₹9L/mo added revenue.</div>
+          </div>
+        </div>
+        <div class="impact-item">
+          <div class="impact-bullet">✓</div>
+          <div>
+            <div class="impact-title">Ad Campaigns Actually Convert → 3–8%</div>
+            <div class="impact-desc">Every ad rupee now lands on a page that works. Same budget → 3x the conversions. Industry-standard 5% conversion restored.</div>
+          </div>
+        </div>
+        <div class="impact-item">
+          <div class="impact-bullet">✓</div>
+          <div>
+            <div class="impact-title">Online Fee Collection → ₹1.5–3L/mo</div>
+            <div class="impact-desc">Razorpay-integrated payment page = instant payments any time. No staff calls. Automatic receipts. Recovered cash flow.</div>
+          </div>
+        </div>
+        <div class="impact-item">
+          <div class="impact-bullet">✓</div>
+          <div>
+            <div class="impact-title">Google Rankings Improve in 6–12 Weeks</div>
+            <div class="impact-desc">Fixed nav, consistent content, clean metadata → bounce rate drops → rankings climb. Position 8 to position 3 = +500 monthly visitors.</div>
+          </div>
+        </div>
+        <div class="impact-item">
+          <div class="impact-bullet">✓</div>
+          <div>
+            <div class="impact-title">Brand Credibility Restored</div>
+            <div class="impact-desc">A flawless website builds trust before the first conversation. For a digital marketing institute — it's proof you practice what you teach.</div>
+          </div>
+        </div>
+        <div class="impact-total gain-total">
+          Estimated Monthly Revenue Recovery
+          <strong>₹14–31 Lakh / Month</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TESTIMONIALS ═══ -->
+<section id="testimonials">
+  <div class="container section-pad">
+    <div style="text-align:center" class="fade-up">
+      <div class="tag" style="margin:0 auto 20px">Client Stories</div>
+      <h2 class="section-title" style="margin:0 auto">From <span>Broken</span> to <span class="accent">Revenue</span></h2>
+      <p class="section-sub" style="margin:16px auto 60px">Real outcomes from businesses that discovered their website was silently bleeding leads — and fixed it.</p>
+    </div>
+    <div class="testi-grid">
+      <div class="testi-card fade-up">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"We had no idea our enrollment form wasn't submitting for 3 weeks. Bug Defuser found it in 15 minutes. After the fix, our online enrollment went from 0 to 40+ per month. The Guardian package paid for itself in 2 days."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">D</div>
+          <div>
+            <div class="testi-name">Director, Digital Marketing Institute</div>
+            <div class="testi-role">Delhi NCR — Education Sector</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card fade-up">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"Our property inquiry form had been sending responses to a dead email for 6 months. We lost hundreds of leads. Bug Defuser found this in the audit and their digital marketing team helped us rebuild the pipeline. Worth every rupee."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">R</div>
+          <div>
+            <div class="testi-name">Owner, Real Estate Agency</div>
+            <div class="testi-role">Noida — Real Estate Sector</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card fade-up">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"I was spending ₹80,000/month on Google Ads and getting almost no leads. Turns out my landing page had a broken submit button. Bug Defuser fixed it in 20 minutes. My very next campaign gave me 28 inquiries in a week."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">P</div>
+          <div>
+            <div class="testi-name">Founder, Dental Clinic Chain</div>
+            <div class="testi-role">Mumbai — Healthcare Sector</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CONTACT ═══ -->
+<section id="contact">
+  <div class="container section-pad">
+    <div class="contact-inner">
+      <div class="contact-info fade-up">
+        <div class="tag">Get Started</div>
+        <h2 class="section-title">Get Your Free <span>Audit Snapshot</span> Today</h2>
+        <p class="section-sub">Tell us your website URL. We'll do a quick 15-minute review and send you a free snapshot of the top 3 issues we find — completely free, no strings attached.</p>
+
+        <div class="contact-detail">
+          <div class="cd-icon">📧</div>
+          <div>
+            <div class="cd-label">Email Us</div>
+            <div class="cd-val">bugdefuser@email.com</div>
+          </div>
+        </div>
+        <div class="contact-detail">
+          <div class="cd-icon">📱</div>
+          <div>
+            <div class="cd-label">WhatsApp / Call</div>
+            <div class="cd-val">+91 XXXXX XXXXX</div>
+          </div>
+        </div>
+        <div class="contact-detail">
+          <div class="cd-icon">⏱️</div>
+          <div>
+            <div class="cd-label">Response Time</div>
+            <div class="cd-val">Within 4 Business Hours</div>
+          </div>
+        </div>
+        <div class="contact-detail">
+          <div class="cd-icon">📍</div>
+          <div>
+            <div class="cd-label">Location</div>
+            <div class="cd-val">Delhi NCR, India — Serving Nationwide</div>
+          </div>
+        </div>
+
+        <div style="margin-top:32px; background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:20px 24px; border-left:3px solid var(--orange)">
+          <div style="font-family:var(--font-mono); font-size:11px; color:var(--orange); margin-bottom:8px;">FREE WITH EVERY AUDIT</div>
+          <div style="font-size:14px; color:var(--gray2); line-height:1.7">
+            ✓ Free 15-min audit snapshot before you commit<br>
+            ✓ Plain-English report — no tech jargon<br>
+            ✓ Fix code provided for every issue found<br>
+            ✓ 7-day validity on all proposals
+          </div>
+        </div>
+      </div>
+
+      <div class="contact-form-wrap fade-up">
+        <div class="form-title">Request Your Audit</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Your Name *</label>
+            <input type="text" placeholder="Full name">
+          </div>
+          <div class="form-group">
+            <label>Phone Number *</label>
+            <input type="tel" placeholder="+91 XXXXX XXXXX">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email Address *</label>
+          <input type="email" placeholder="your@business.com">
+        </div>
+        <div class="form-group">
+          <label>Website URL *</label>
+          <input type="url" placeholder="https://yourwebsite.com">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Business Type</label>
+            <select>
+              <option value="">Select Industry</option>
+              <option>Education / Institute</option>
+              <option>Real Estate Agency</option>
+              <option>Clinic / Hospital</option>
+              <option>E-Commerce Store</option>
+              <option>Restaurant / F&B</option>
+              <option>Law / CA Firm</option>
+              <option>Service Provider</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Package Interest</label>
+            <select>
+              <option value="">Choose Package</option>
+              <option>Starter — ₹4,999</option>
+              <option>Professional — ₹9,999</option>
+              <option>Guardian — ₹17,999</option>
+              <option>Custom / Enterprise</option>
+              <option>Free Snapshot First</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Tell Us About Your Website Issues</label>
+          <textarea placeholder="e.g. My contact form might not be working, I'm not getting leads, my Google ranking dropped..."></textarea>
+        </div>
+        <button class="btn btn-primary form-submit" onclick="submitForm(this)">
+          🔍 Request Free Audit Snapshot
+        </button>
+        <p style="font-family:var(--font-mono); font-size:10px; color:var(--gray2); margin-top:12px; text-align:center;">
+          No spam. No sales pressure. Just your free audit snapshot within 4 hours.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <img src="/mnt/user-data/uploads/image_ec293415bd.png" alt="Bug Defuser">
+        <p>India's specialist website audit and bug-fixing agency. We find them, we fix them, we watch them for 6 months. So you can focus on your business.</p>
+        <div class="footer-social">
+          <a class="social-btn" href="#" title="LinkedIn">💼</a>
+          <a class="social-btn" href="#" title="Instagram">📸</a>
+          <a class="social-btn" href="#" title="Twitter">🐦</a>
+          <a class="social-btn" href="#" title="YouTube">▶️</a>
+          <a class="social-btn" href="#" title="WhatsApp">💬</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Services</h4>
+        <ul>
+          <li><a href="#services">Website Bug Audit</a></li>
+          <li><a href="#services">Fix Implementation</a></li>
+          <li><a href="#services">6-Month Retainer</a></li>
+          <li><a href="#services">SEO Monitoring</a></li>
+          <li><a href="#services">Security Scanning</a></li>
+          <li><a href="#digital-marketing">Digital Marketing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Industries</h4>
+        <ul>
+          <li><a href="#industries">Education & Institutes</a></li>
+          <li><a href="#industries">Real Estate Agencies</a></li>
+          <li><a href="#industries">Clinics & Hospitals</a></li>
+          <li><a href="#industries">E-Commerce</a></li>
+          <li><a href="#industries">Service Providers</a></li>
+          <li><a href="#industries">Builders & Developers</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#about">About Bug Defuser</a></li>
+          <li><a href="#pricing">Pricing Packages</a></li>
+          <li><a href="#impact">Business Impact</a></li>
+          <li><a href="#testimonials">Client Stories</a></li>
+          <li><a href="#contact">Get Free Audit</a></li>
+          <li><a href="#contact">Contact Us</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">
+        © 2025 <span>Bug Defuser</span>. All rights reserved. Built for businesses that can't afford broken websites.
+      </div>
+      <div class="footer-links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Refund Policy</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══ SCRIPTS ═══ -->
+<script>
+// ── Scroll animations ──────────────────────────────────────
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 80);
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.fade-up, .fade-in').forEach(el => observer.observe(el));
+
+// ── Scroll bar fill animation ──────────────────────────────
+const barObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.dm-bar-fill').forEach(bar => {
+        bar.style.animationPlayState = 'running';
+      });
+    }
+  });
+}, { threshold: 0.3 });
+const statPanel = document.querySelector('.dm-stats-panel');
+if (statPanel) barObserver.observe(statPanel);
+
+// ── Navbar scroll effect ───────────────────────────────────
+window.addEventListener('scroll', () => {
+  const nav = document.getElementById('navbar');
+  nav.style.background = window.scrollY > 50
+    ? 'rgba(8,8,18,0.97)'
+    : 'rgba(8,8,18,0.85)';
+});
+
+// ── Hamburger menu ─────────────────────────────────────────
+function toggleMenu(btn) {
+  btn.classList.toggle('open');
+  const links = document.querySelector('.nav-links');
+  const cta   = document.querySelector('.nav-cta');
+  if (links.style.display === 'flex') {
+    links.style.display = 'none';
+    if (cta) cta.style.display = 'none';
+  } else {
+    links.style.cssText = 'display:flex; flex-direction:column; position:absolute; top:70px; left:0; right:0; background:rgba(8,8,18,0.98); padding:24px; gap:20px; border-bottom:1px solid rgba(255,255,255,0.07)';
+    if (cta) cta.style.display = 'none';
+  }
+}
+
+// ── Typed terminal effect ──────────────────────────────────
+const termLines = document.querySelectorAll('.term-line');
+termLines.forEach((line, i) => {
+  line.style.opacity = '0';
+  setTimeout(() => {
+    line.style.transition = 'opacity .3s';
+    line.style.opacity = '1';
+  }, 600 + i * 220);
+});
+
+// ── Form submit ────────────────────────────────────────────
+function submitForm(btn) {
+  const orig = btn.innerHTML;
+  btn.innerHTML = '⏳ Sending...';
+  btn.disabled = true;
+  btn.style.opacity = '.7';
+  setTimeout(() => {
+    btn.innerHTML = '✅ Request Received! We\'ll reach out within 4 hours.';
+    btn.style.background = 'var(--green)';
+    btn.style.opacity = '1';
+    btn.disabled = false;
+    setTimeout(() => {
+      btn.innerHTML = orig;
+      btn.style.background = '';
+    }, 5000);
+  }, 1800);
+}
+
+// ── Active nav link on scroll ──────────────────────────────
+const sections = document.querySelectorAll('section[id]');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 120) current = s.id;
+  });
+  document.querySelectorAll('.nav-links a').forEach(a => {
+    a.style.color = a.getAttribute('href') === '#' + current
+      ? 'var(--orange)' : '';
+  });
+});
+
+// ── Counter animation ──────────────────────────────────────
+function animateCounters() {
+  document.querySelectorAll('.stat-num').forEach(el => {
+    const text = el.textContent;
+    const match = text.match(/^(\d+)/);
+    if (!match) return;
+    const target = parseInt(match[1]);
+    const suffix = text.replace(/^\d+/, '');
+    let start = 0;
+    const step = target / 40;
+    const timer = setInterval(() => {
+      start = Math.min(start + step, target);
+      el.innerHTML = Math.floor(start) + '<span>' + suffix.replace(/\d/g, '') + '</span>';
+      if (start >= target) clearInterval(timer);
+    }, 35);
+  });
+}
+const heroObs = new IntersectionObserver(e => {
+  if (e[0].isIntersecting) animateCounters();
+}, { threshold: .5 });
+const heroStats = document.querySelector('.hero-stats');
+if (heroStats) heroObs.observe(heroStats);
+</script>
+</body>
+</html>
